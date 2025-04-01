@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - News Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>News Portal Admin</h1>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flashes">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="login-form">
+            <h2>Admin Login</h2>
+            <form method="POST" action="{{ url_for('admin_login') }}">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Parola</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn login-btn">Login</button>
+                </div>
+
+            </form>
+            <div class="back-to-site">
+                <a href="{{ url_for('index') }}">← Back to News Portal</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

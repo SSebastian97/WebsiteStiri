@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}News Portal{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <h1><a href="{{ url_for('index') }}">NEWS PORTAL</a></h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                {% for category in get_categories() %}
+                    <li><a href="{{ url_for('category', slug=category.slug) }}">{{ category.name }}</a></li>
+                {% endfor %}
+                <li><a href="/admin">Admin</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% if breaking_news and breaking_news.active %}
+        <div class="breaking-news">
+            <div class="breaking-news-container">
+                <span class="breaking-label">BREAKING</span>
+                <div style="overflow: hidden; width: 100%;">
+                    <span class="breaking-news-content">{{ breaking_news.content }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flashes">
+                    {% for message in messages %}
+                        <div class="flash-message">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 News Portal. All rights reserved</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

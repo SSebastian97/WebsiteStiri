@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}News Portal - Cele mai noi titluri de stiri{% endblock %}
+
+{% block content %}
+<div class="articles-container">
+    <h2>Cele mai noi titluri de stiri</h2>
+    {% if articles.items %}
+    <div class="article-list">
+        {% for article in articles.items %}
+            <div class="article-card">
+                {% if article.image_path %}
+                <div class="article-image">
+                    <img src="{{ url_for('static', filename=article.image_path) }}" alt="{{ article.title }}">
+                </div>
+                {% endif %}
+                <div class="article-preview">
+                    <h3><a href="{{ url_for('article', id=article.id) }}">{{ article.title }}</a></h3>
+                    <div class="preview-content">
+                        {% if article.excerpt %}
+                            {{ article.excerpt }}
+                        {% else %}
+                            {{ article.content|striptags|truncate(150, true, '...') }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="article-meta">
+                    <span class="date">{{ article.created_at.strftime('%B %d, %Y') }}</span>
+                    {% if article.youtube_link %}
+                        <span class="video-indicator">Video</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination Controls -->
+    {% if articles.pages > 1 %}
+    <div class="pagination">
+        {% if articles.has_prev %}
+            <a href="{{ url_for('index', page=articles.prev_num) }}" class="pagination-btn prev">&laquo; Previous</a>
+        {% else %}
+            <span class="pagination-btn prev disabled">&laquo; Previous</span>
+        {% endif %}
+
+        <div class="pagination-info">
+            Page {{ articles.page }} of {{ articles.pages }}
+        </div>
+
+        {% if articles.has_next %}
+            <a href="{{ url_for('index', page=articles.next_num) }}" class="pagination-btn next">Next &raquo;</a>
+        {% else %}
+            <span class="pagination-btn next disabled">Next &raquo;</span>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+        <p class="no-articles">Nu exista stiri momentan. Reveniti mai tarziu</p>
+    {% endif %}
+</div>
+{% endblock %}

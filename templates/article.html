@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ article.title }}{% endblock %}
+
+{% block content %}
+<div class="article-detail">
+    <h2>{{ article.title }}</h2>
+    <div class="article-meta">
+        <span class="date">{{ article.created_at.strftime('%B %d, %Y') }}</span>
+        {% if article.category %}
+            <a href="{{ url_for('category', slug=article.category.slug) }}" class="category-badge">{{ article.category.name }}</a>
+        {% endif %}
+    </div>
+
+    {% if article.image_path %}
+    <div class="article-image">
+        <img src="{{ url_for('static', filename=article.image_path) }}" alt="{{ article.title }}">
+    </div>
+    {% endif %}
+
+    <div class="article-content">
+        {{ article.content | safe }}
+    </div>
+
+
+    {% if youtube_id %}
+        <div class="video-container">
+            <h3>Related Video</h3>
+            <div class="youtube-embed">
+                <iframe 
+                    width="560" 
+                    height="315" 
+                    src="https://www.youtube.com/embed/{{ youtube_id }}" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="article-actions">
+            <div class="article-actions">
+                {% if session.get('admin_logged_in') %}
+                    <a href="{{ url_for('admin_edit_article', id=article.id) }}" class="btn edit-btn">Edit</a>
+                    <a href="{{ url_for('admin_delete_article', id=article.id) }}" class="btn delete-btn" onclick="return confirm('Are you sure you want to delete this article?')">Delete</a>
+                {% endif %}
+                <a href="{{ url_for('index') }}" class="btn back-btn">Back to Home</a>
+            </div>
+</div>
+{% endblock %}
