@@ -1,0 +1,111 @@
+ <!-- Add this at the top of about.html -->
+<!-- DEBUG: About page template loaded, title: {{ about_page.title }} -->
+{% extends 'base.html' %}
+
+{% block title %}{{ about_page.title }} - Newscube{% endblock %}
+
+{% block content %}
+<!-- About Hero Section -->
+<section class="hero-section about-hero">
+    <div class="hero-image">
+        {% if about_page.hero_image %}
+            <img src="{{ url_for('static', filename=about_page.hero_image) }}" alt="About Newscube">
+        {% else %}
+            <img src="{{ url_for('static', filename='img/hero-default.jpg') }}" alt="About Newscube">
+        {% endif %}
+    </div>
+    <div class="hero-content">
+        <h1>{{ about_page.hero_title }}</h1>
+        <p>{{ about_page.hero_subtitle }}</p>
+    </div>
+</section>
+
+
+<div class="about-container">
+    <h2>{{ about_page.title }}</h2>
+
+    <!-- Categories Navigation -->
+<!--    <ul class="categories-nav">-->
+<!--        <li><a href="#latest" class="active">Latest</a></li>-->
+<!--        <li><a href="#discover">Discover</a></li>-->
+<!--        <li><a href="#most">Most</a></li>-->
+<!--        <li><a href="#latest">Latest</a></li>-->
+<!--        <li><a href="#trending">Trending</a></li>-->
+<!--        <li><a href="#events">Upcoming Events</a></li>-->
+<!--    </ul>-->
+
+    <!-- About Content -->
+    <div class="about-content">
+        {{ about_page.content|safe }}
+    </div>
+
+<!--    &lt;!&ndash; Featured Article &ndash;&gt;-->
+<!--    {% set featured_article = get_featured_article() %}-->
+<!--    {% if featured_article %}-->
+<!--    <div class="featured-article">-->
+<!--        <div class="featured-article-image">-->
+<!--            {% if featured_article.image_path %}-->
+<!--            <img src="{{ url_for('static', filename=featured_article.image_path) }}" alt="{{ featured_article.title }}">-->
+<!--            {% else %}-->
+<!--            <img src="{{ url_for('static', filename='img/featured-default.jpg') }}" alt="Featured Article">-->
+<!--            {% endif %}-->
+<!--        </div>-->
+<!--        <div class="featured-article-content">-->
+<!--            <h3>Featured Article</h3>-->
+<!--            <p>-->
+<!--                {% if featured_article.excerpt %}-->
+<!--                    {{ featured_article.excerpt }}-->
+<!--                {% else %}-->
+<!--                    {{ featured_article.content|striptags|truncate(200, true, '...') }}-->
+<!--                {% endif %}-->
+<!--            </p>-->
+<!--            <a href="{{ url_for('article', id=featured_article.id) }}" class="read-more">Read Now</a>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    {% endif %}-->
+
+<!--    &lt;!&ndash; The Power of Resilience &ndash;&gt;-->
+<!--    {% set resilience_article = get_article_by_title('The Power of Resilience') %}-->
+<!--    {% if resilience_article %}-->
+<!--    <div class="resilience-article">-->
+<!--        <h3>{{ resilience_article.title }}</h3>-->
+<!--        <p>-->
+<!--            {% if resilience_article.excerpt %}-->
+<!--                {{ resilience_article.excerpt }}-->
+<!--            {% else %}-->
+<!--                {{ resilience_article.content|striptags|truncate(200, true, '...') }}-->
+<!--            {% endif %}-->
+<!--        </p>-->
+<!--        <a href="{{ url_for('article', id=resilience_article.id) }}" class="read-more">Read Now</a>-->
+<!--    </div>-->
+<!--    {% endif %}-->
+
+    <!-- Latest Articles -->
+    <div class="latest-news">
+        <h2>Latest Stories</h2>
+        <div class="news-grid">
+            {% for article in recent_articles %}
+            <div class="news-card">
+                {% if article.image_path %}
+                <div class="news-card-image">
+                    <img src="{{ url_for('static', filename=article.image_path) }}" alt="{{ article.title }}">
+                    {% if article.category %}
+                    <span class="category-tag">{{ article.category.name }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <h3><a href="{{ url_for('article', id=article.id) }}">{{ article.title }}</a></h3>
+                <p>
+                    {% if article.excerpt %}
+                        {{ article.excerpt }}
+                    {% else %}
+                        {{ article.content|striptags|truncate(150, true, '...') }}
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('article', id=article.id) }}" class="read-more">Read More</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

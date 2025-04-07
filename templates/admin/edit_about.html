@@ -1,0 +1,98 @@
+<!-- admin/edit_about.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.tiny.cloud/1/hvlhypv5vycmgpd7qvqmmbifo4v9l1eqgvsiijv465alpr4u/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+      tinymce.init({
+        selector: '#content',
+        plugins: 'link image lists',
+        toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist | link image',
+        menubar: false
+      });
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit About Page - News Portal Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>News Portal Admin</h1>
+            <div class="admin-nav">
+                <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('admin_create_article') }}">Create Article</a>
+                <a href="{{ url_for('admin_breaking_news') }}">Breaking News</a>
+                <a href="{{ url_for('admin_about') }}" class="active">About Page</a>
+                <a href="{{ url_for('index') }}" target="_blank">View Site</a>
+                <a href="{{ url_for('admin_logout') }}">Logout</a>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flashes">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="admin-content">
+            <div class="form-header">
+                <h2>Edit About Page</h2>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn back-btn">← Back to Dashboard</a>
+            </div>
+
+            <div class="article-form">
+                <form method="POST" action="{{ url_for('admin_about') }}" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="title">Page Title</label>
+                        <input type="text" id="title" name="title" value="{{ about_page.title }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hero_title">Hero Section Title</label>
+                        <input type="text" id="hero_title" name="hero_title" value="{{ about_page.hero_title }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hero_subtitle">Hero Section Subtitle</label>
+                        <input type="text" id="hero_subtitle" name="hero_subtitle" value="{{ about_page.hero_subtitle }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hero_image">Hero Image</label>
+                        {% if about_page.hero_image %}
+                            <div class="current-image">
+                                <p>Current hero image:</p>
+                                <img src="{{ url_for('static', filename=about_page.hero_image) }}" alt="Current hero image" style="max-width: 200px; margin-top: 10px;">
+                            </div>
+                        {% endif %}
+                        <input type="file" id="hero_image" name="hero_image" accept="image/*">
+                        <small>Upload a new image to replace the current one. Leave empty to keep the existing image.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="content">Page Content</label>
+                        <textarea id="content" name="content" rows="15" required>{{ about_page.content }}</textarea>
+                    </div>
+
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn submit-btn">Update About Page</button>
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn cancel-btn">Cancel</a>
+                        <a href="{{ url_for('admin_delete_about') }}" class="btn delete-btn" onclick="return confirm('Are you sure you want to delete the About page content? This will reset it to default.')">Reset About Content</a>
+                    </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
