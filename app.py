@@ -27,6 +27,18 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+class AboutPage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False, default="About Us")
+    content = db.Column(db.Text, nullable=False)
+    hero_title = db.Column(db.String(100), default="Discover the World of News")
+    hero_subtitle = db.Column(db.String(200), default="Explore the Latest Stories")
+    hero_image = db.Column(db.String(200))  # Path to the hero image
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<AboutPage {self.id}>'
+
 class BreakingNews(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.String(255), nullable=False)
@@ -59,6 +71,26 @@ class Article(db.Model):
         return f'<Article {self.title}>'
 
 
+def create_default_about_page():
+    # Check if about page already exists
+    about_page = AboutPage.query.first()
+    if not about_page:
+        about_page = AboutPage(
+            title="About Newscube",
+            content="""
+            <p>Welcome to Newscube, your trusted source for the latest news and insights from around the world.</p>
+
+            <p>Our team of experienced journalists and contributors work tirelessly to bring you accurate, timely, and relevant stories across a variety of topics including politics, technology, health, culture, and more.</p>
+
+            <p>At Newscube, we believe in the power of information to transform lives and communities. We are committed to upholding the highest standards of journalistic integrity and excellence in everything we do.</p>
+
+            <p>Thank you for choosing Newscube as your news source. We look forward to being your window to the world.</p>
+            """,
+            hero_title="Discover the World of News",
+            hero_subtitle="Explore the Latest Stories"
+        )
+        db.session.add(about_page)
+        db.session.commit()
 def create_default_categories():
     # List of categories matching your navigation
     categories = [
@@ -171,6 +203,105 @@ def admin_breaking_news():
                            current_news=current_news,
                            breaking_news_history=breaking_news_history)
 
+
+@app.context_processor
+def inject_local_content():
+    def get_local_articles(limit=3):
+        # Try to find articles across several potential "local" categories
+        local_slugs = ['local', 'community', 'regional', 'povestea-regiunii', 'reportaje']
+
+        local_categories = Category.query.filter(Category.slug.in_(local_slugs)).all()
+
+        if local_categories:
+            category_ids = [cat.id for cat in local_categories]
+            return Article.query.filter(
+                Article.category_id.in_(category_ids),
+                Article.published == True
+            ).order_by(Article.created_at.desc()).limit(limit).all()
+        else:
+            # If no matching categories, just return the latest articles
+            return Article.query.filter_by(
+                published=True
+            ).order_by(Article.created_at.desc()).limit(limit).all()
+
+    return dict(get_local_articles=get_local_articles)
+@app.context_processor
+def inject_utilities():
+    def get_articles_by_category(category_id, limit=3):
+        return Article.query.filter_by(
+            category_id=category_id,
+            published=True
+        ).order_by(Article.created_at.desc()).limit(limit).all()
+
+    return dict(get_articles_by_category=get_articles_by_category)
+
+
+@app.context_processor
+def inject_featured_content():
+    def get_featured_article():
+        # Get the most recent article
+        return Article.query.filter_by(published=True).order_by(Article.created_at.desc()).first()
+
+    return dict(get_featured_article=get_featured_article)
+
+
+@app.context_processor
+def inject_article_utilities():
+    def get_latest_articles(limit=3):
+        return Article.query.filter_by(published=True).order_by(Article.created_at.desc()).limit(limit).all()
+
+    return dict(get_latest_articles=get_latest_articles)
+
+
+@app.context_processor
+def inject_article_by_title_util():
+    def get_article_by_title(title):
+        return Article.query.filter(
+            Article.title.like('%' + title + '%'),
+            Article.published == True
+        ).first()
+
+    return dict(get_article_by_title=get_article_by_title)
+
+
+@app.route('/admin/about/delete', methods=['GET'])
+@admin_required
+def admin_delete_about():
+    try:
+        # Get the about page
+        about_page = AboutPage.query.first()
+
+        if about_page:
+            # Option 1: Delete the record completely
+            # db.session.delete(about_page)
+
+            # Option 2: Reset to default content (better approach)
+            about_page.title = "About Newscube"
+            about_page.content = """
+            <p>Welcome to Newscube, your trusted source for the latest news and insights from around the world.</p>
+
+            <p>Our team of experienced journalists and contributors work tirelessly to bring you accurate, timely, and relevant stories across a variety of topics including politics, technology, health, culture, and more.</p>
+
+            <p>At Newscube, we believe in the power of information to transform lives and communities. We are committed to upholding the highest standards of journalistic integrity and excellence in everything we do.</p>
+
+            <p>Thank you for choosing Newscube as your news source. We look forward to being your window to the world.</p>
+            """
+            about_page.hero_title = "Discover the World of News"
+            about_page.hero_subtitle = "Explore the Latest Stories"
+            about_page.hero_image = None  # Reset image
+
+            db.session.commit()
+            flash('About page content has been reset to default.', 'success')
+        else:
+            # If no about page exists, create the default one
+            create_default_about_page()
+            flash('Default About page has been created.', 'success')
+
+        return redirect(url_for('admin_about'))
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error resetting About page: {str(e)}', 'error')
+        return redirect(url_for('admin_about'))
 
 @app.route('/admin/breaking-news/reuse/<int:id>')
 @admin_required
@@ -319,6 +450,119 @@ def admin_edit_article(id):
     return render_template('admin/edit_article.html', article=article, categories=categories)
 
 
+@app.route('/about')
+def about():
+    # Force database refresh
+    db.session.expire_all()
+
+    # Get a fresh copy of the about page
+    about_page = AboutPage.query.first()
+
+    if not about_page:
+        create_default_about_page()
+        about_page = AboutPage.query.first()
+
+    # Get some recent articles to display
+    recent_articles = Article.query.filter_by(published=True).order_by(Article.created_at.desc()).limit(3).all()
+
+    # Debug - print the about page content to console
+    print(f"Loading About page with title: {about_page.title}")
+    print(f"Content: {about_page.content[:100]}...")
+
+    return render_template('about.html', about_page=about_page, recent_articles=recent_articles)
+
+
+@app.route('/admin/about', methods=['GET', 'POST'])
+@admin_required
+def admin_about():
+    about_page = AboutPage.query.first()
+    if not about_page:
+        create_default_about_page()
+        about_page = AboutPage.query.first()
+
+    if request.method == 'POST':
+        # Print debugging info
+        print("Admin submitting About page update...")
+        print(f"New title: {request.form['title']}")
+        print(f"New content length: {len(request.form['content'])}")
+
+        # Update the about page
+        about_page.title = request.form['title']
+        about_page.content = request.form['content']
+        about_page.hero_title = request.form['hero_title']
+        about_page.hero_subtitle = request.form['hero_subtitle']
+
+        # Handle hero image upload
+        if 'hero_image' in request.files:
+            file = request.files['hero_image']
+            if file and file.filename != '' and allowed_file(file.filename):
+                # Delete old image if it exists
+                if about_page.hero_image:
+                    old_file_path = os.path.join('static', about_page.hero_image)
+                    if os.path.exists(old_file_path):
+                        os.remove(old_file_path)
+
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+                about_page.hero_image = 'uploads/' + filename
+
+        # Commit changes with error handling
+        try:
+            db.session.commit()
+            print("About page successfully updated in database")
+            flash('About page updated successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            print(f"ERROR updating about page: {str(e)}")
+            flash(f'Error updating about page: {str(e)}', 'error')
+
+        return redirect(url_for('admin_about'))
+
+    return render_template('admin/edit_about.html', about_page=about_page)
+
+
+@app.context_processor
+def inject_about_page():
+    def get_about_page():
+        return AboutPage.query.first()
+
+    return dict(get_about_page=get_about_page)
+
+
+@app.context_processor
+def inject_about_page():
+    def get_about_page():
+        return AboutPage.query.first()
+
+    return dict(get_about_page=get_about_page)
+@app.route('/test-about')
+def test_about():
+    about_page = AboutPage.query.first()
+    return render_template('test_about.html', about_page=about_page)
+@app.route('/test-about-db')
+def test_about_db():
+    about_page = AboutPage.query.first()
+    if not about_page:
+        return "No About page found in database!"
+
+    result = {
+        "id": about_page.id,
+        "title": about_page.title,
+        "hero_title": about_page.hero_title,
+        "hero_subtitle": about_page.hero_subtitle,
+        "content_preview": about_page.content[:100] + "...",
+        "updated_at": about_page.updated_at
+    }
+
+    return jsonify(result)
+
+
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
 @app.route('/category/<string:slug>')
 def category(slug):
     page = request.args.get('page', 1, type=int)
@@ -346,10 +590,11 @@ def admin_delete_article(id):
     return redirect(url_for('admin_dashboard'))
 
 
-if __name__ == '__main__':# Add this to your app initialization
+if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         create_default_categories()
+        create_default_about_page()
 
         # Create a default breaking news message if none exists
         if not BreakingNews.query.first():
