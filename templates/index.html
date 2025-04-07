@@ -1,36 +1,126 @@
 {% extends 'base.html' %}
 
-{% block title %}News Portal - Cele mai noi titluri de stiri{% endblock %}
+{% block title %}Newscube - Discover the World of News{% endblock %}
 
 {% block content %}
-<div class="articles-container">
-    <h2>Cele mai noi titluri de stiri</h2>
-    {% if articles.items %}
-    <div class="article-list">
+<!-- Hero Section -->
+<!-- In index.html, replace the current hero-section with this: -->
+<!--<section class="hero-section">-->
+<!--    {% set featured_article = get_featured_article() %}-->
+<!--    {% if featured_article %}-->
+<!--    <div class="hero-image">-->
+<!--        {% if featured_article.image_path %}-->
+<!--        <img src="{{ url_for('static', filename=featured_article.image_path) }}" alt="{{ featured_article.title }}">-->
+<!--        {% else %}-->
+<!--        <img src="{{ url_for('static', filename='img/hero-default.jpg') }}" alt="Hero Image">-->
+<!--        {% endif %}-->
+<!--    </div>-->
+<!--    <div class="hero-content">-->
+<!--        <h1>Discover the World of</h1>-->
+<!--        <p>Explore the Latest Stories</p>-->
+<!--        <p>-->
+<!--            {% if featured_article.excerpt %}-->
+<!--                {{ featured_article.excerpt }}-->
+<!--            {% else %}-->
+<!--                {{ featured_article.content|striptags|truncate(150, true, '...') }}-->
+<!--            {% endif %}-->
+<!--        </p>-->
+<!--        <a href="{{ url_for('article', id=featured_article.id) }}" class="cta-button">Read More</a>-->
+<!--    </div>-->
+<!--    {% else %}-->
+    <div class="hero-image">
+        <img src="{{ url_for('static', filename='img/hero-default.jpg') }}" alt="Hero Image">
+    </div>
+    <div class="hero-content">
+        <h1>Discover the World of</h1>
+        <p>Explore the Latest Stories</p>
+        <p>Welcome to our news portal, where we deliver a diverse range of articles and insights to keep you informed and engaged.</p>
+        <a href="{{ url_for('index') }}" class="cta-button">Read More</a>
+    </div>
+    {% endif %}
+</section>
+
+<!-- About Section -->
+<!-- Replace the current About Section in index.html with this -->
+<section class="about-section">
+    <h2>About Us</h2>
+
+    <ul class="categories-nav">
+        <li><a href="#" class="active">Latest</a></li>
+        <li><a href="#">Discover</a></li>
+        <li><a href="#">Most</a></li>
+        <li><a href="#">Latest</a></li>
+        <li><a href="#">Trending</a></li>
+        <li><a href="#">Upcoming Events</a></li>
+    </ul>
+
+    {% set about_page = get_about_page() %}
+    {% if about_page %}
+    <div class="about-content-preview">
+        <div class="about-excerpt">
+            {{ about_page.content|safe }}
+        </div>
+        <a href="{{ url_for('about') }}" class="read-more">Read More About Us →</a>
+    </div>
+    {% else %}
+    <div class="about-content-preview">
+        <p>Welcome to our news portal, where we deliver a diverse range of articles and insights to keep you informed and engaged.</p>
+        <a href="{{ url_for('about') }}" class="read-more">Read More About Us →</a>
+    </div>
+    {% endif %}
+</section>
+
+<!--    <div class="featured-article">-->
+<!--        <div class="featured-article-image">-->
+<!--            <img src="{{ url_for('static', filename='img/featured-article.jpg') }}" alt="Featured Article">-->
+<!--        </div>-->
+<!--        <div class="featured-article-content">-->
+<!--            <h3>Featured Article</h3>-->
+<!--            <p>Dive into our in-depth feature on the life and legacy of the renowned entrepreneur, John Doe</p>-->
+<!--            <a href="#" class="read-more">Read Now</a>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div class="news-card">-->
+<!--        <div class="news-card-image">-->
+<!--            <img src="{{ url_for('static', filename='img/article-image.jpg') }}" alt="Article Image">-->
+<!--        </div>-->
+<!--        <h3>The Power of Resilience</h3>-->
+<!--        <p>In this thought-provoking piece, we explore the remarkable story of Jane Smith, a resilient individual who overcame seemingly insurmountable obstacles to achieve extraordinary success</p>-->
+<!--        <a href="#" class="read-more">Read Now</a>-->
+<!--    </div>-->
+<!--</section>-->
+
+<!-- Latest News Section -->
+<section class="latest-news">
+    <h2>Latest News</h2>
+
+    <div class="news-grid">
         {% for article in articles.items %}
-            <div class="article-card">
-                {% if article.image_path %}
-                <div class="article-image">
-                    <img src="{{ url_for('static', filename=article.image_path) }}" alt="{{ article.title }}">
-                </div>
+        <div class="news-card">
+            {% if article.image_path %}
+            <div class="news-card-image">
+                <img src="{{ url_for('static', filename=article.image_path) }}" alt="{{ article.title }}">
+                {% if article.category %}
+                <span class="category-tag">{{ article.category.name }}</span>
                 {% endif %}
-                <div class="article-preview">
-                    <h3><a href="{{ url_for('article', id=article.id) }}">{{ article.title }}</a></h3>
-                    <div class="preview-content">
-                        {% if article.excerpt %}
-                            {{ article.excerpt }}
-                        {% else %}
-                            {{ article.content|striptags|truncate(150, true, '...') }}
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="article-meta">
-                    <span class="date">{{ article.created_at.strftime('%B %d, %Y') }}</span>
-                    {% if article.youtube_link %}
-                        <span class="video-indicator">Video</span>
-                    {% endif %}
-                </div>
             </div>
+            {% endif %}
+            <h3><a href="{{ url_for('article', id=article.id) }}">{{ article.title }}</a></h3>
+            <p>
+                {% if article.excerpt %}
+                    {{ article.excerpt }}
+                {% else %}
+                    {{ article.content|striptags|truncate(150, true, '...') }}
+                {% endif %}
+            </p>
+            <div class="article-meta">
+                <span class="date">{{ article.created_at.strftime('%B %d, %Y') }}</span>
+                {% if article.youtube_link %}
+                    <span class="video-indicator">Video</span>
+                {% endif %}
+            </div>
+        </div>
         {% endfor %}
     </div>
 
@@ -54,8 +144,51 @@
         {% endif %}
     </div>
     {% endif %}
-    {% else %}
-        <p class="no-articles">Nu exista stiri momentan. Reveniti mai tarziu</p>
-    {% endif %}
-</div>
+</section>
+
+<!-- Replace your existing Spotlight section with this: -->
+<section class="spotlight-section">
+    <h2>Spotlight on Local</h2>
+
+    <div class="spotlight-grid">
+        {% set local_articles = get_local_articles(3) %}
+        {% if local_articles %}
+            {% for article in local_articles %}
+            <div class="spotlight-item">
+                {% if article.image_path %}
+                <div class="spotlight-image">
+                    <img src="{{ url_for('static', filename=article.image_path) }}" alt="{{ article.title }}">
+                    {% if article.category %}
+                    <span class="spotlight-category">{{ article.category.name }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <div class="spotlight-content">
+                    <h3><a href="{{ url_for('article', id=article.id) }}">{{ article.title }}</a></h3>
+                    <p>
+                        {% if article.excerpt %}
+                            {{ article.excerpt }}
+                        {% else %}
+                            {{ article.content|striptags|truncate(120, true, '...') }}
+                        {% endif %}
+                    </p>
+                    <div class="spotlight-meta">
+                        <span class="spotlight-date">{{ article.created_at.strftime('%B %d, %Y') }}</span>
+                        {% if article.youtube_link %}
+                            <span class="video-indicator">Video</span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('article', id=article.id) }}" class="read-more">Read more</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-articles spotlight-empty">
+                <p>No local articles available. Add some articles to the "Local" category to see them here.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}
+
+

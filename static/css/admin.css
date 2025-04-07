@@ -26,7 +26,24 @@ a:hover {
     margin: 0 auto;
     padding: 2rem;
 }
+td {
+    color: #333; /* Dark gray text color for better readability */
+}
 
+/* Add specific text color for table cells */
+.title-cell {
+    color: #333;
+}
+
+/* Fix other table-related text colors if needed */
+table tr td {
+    color: #333;
+}
+
+/* Make sure the table headers have proper contrast */
+table th {
+    color: #555; /* This should already be in your CSS, but just to be sure */
+}
 /* Admin Header */
 .admin-header {
     background-color: #212121;

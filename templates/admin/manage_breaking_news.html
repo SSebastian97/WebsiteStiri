@@ -12,12 +12,14 @@
         <div class="admin-header">
             <h1>News Portal Admin</h1>
             <div class="admin-nav">
-                <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
-                <a href="{{ url_for('admin_create_article') }}">Create Article</a>
-                <a href="{{ url_for('admin_breaking_news') }}" class="active">Breaking News</a>
+                <a href="{{ url_for('admin_dashboard') }}" {% if request.endpoint == 'admin_dashboard' %}class="active"{% endif %}>Dashboard</a>
+                <a href="{{ url_for('admin_create_article') }}" {% if request.endpoint == 'admin_create_article' %}class="active"{% endif %}>Create Article</a>
+                <a href="{{ url_for('admin_breaking_news') }}" {% if request.endpoint == 'admin_breaking_news' %}class="active"{% endif %}>Breaking News</a>
+                <a href="{{ url_for('admin_about') }}" {% if request.endpoint == 'admin_about' %}class="active"{% endif %}>About Page</a>
                 <a href="{{ url_for('index') }}" target="_blank">View Site</a>
                 <a href="{{ url_for('admin_logout') }}">Logout</a>
             </div>
+
         </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
